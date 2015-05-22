@@ -19,5 +19,18 @@ Le Simple GCode Decoder est compatible avec le CNC-Shield : http://blog.protonee
 
 ## Instructions de G-Code implémentées
 
+## Utilisation 
+
+Simplement programmer le programme dans une carte Arduino UNO. Envoyer ensuite des instructions de GCode valide sur le port série : elles seront reconnues et exécutées. 
+
+## Exemple de mise en oeuvre : 
+
+Le Simple GCode Decoder a été développé et est utilisé sur l'Open Maker Machine en situation réelle : voir http://www.mon-club-elec.fr/openmakermachine/index.html)
+
+## Interface graphique disponible
+
+En complément du Simple GCode Decoder, il est possible d'utiliser une interface PyQt dédiée : l'interface Simple GCode GUI du même auteur. 
+
+
 Les instructions de G-Code implémentées et reconnues par le Simple G-Code Decoder sont les suivantes : 
 
