@@ -1,11 +1,13 @@
 // --- Programme Arduino --- 
 
-// Auteur du Programme : X. HINAULT - Tous droits réservés - Licence GPL v3
-// Programme écrit le : 02/2015
+// Auteur du Programme : Xavier HINAULT - Tous droits réservés - Licence GPL v3
+// Programme écrit le : 02/2015 MAJ : 04/2015
 // www.mon-club-elec.fr 
 
+// github du projet : https://github.com/sensor56/Simple-GCode-Decoder
+// exemple d'utilisation : www.mon-club-elec.fr/openmakermachine 
+
 // initié d'après : https://www.marginallyclever.com/blog/2013/08/how-to-build-an-2-axis-arduino-cnc-gcode-interpreter/
-// https://github.com/MarginallyClever/GcodeCNCDemo/blob/master/GcodeCNCDemo2AxisV2/GcodeCNCDemo2AxisV2.ino
 
 // ------- Licence du code de ce programme ----- 
 //  This program is free software: you can redistribute it and/or modify
