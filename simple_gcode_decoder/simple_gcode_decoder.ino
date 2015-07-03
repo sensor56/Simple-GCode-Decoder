@@ -792,8 +792,10 @@ void feedrate(float nfr) {
   // ici on calcul le delay entre 2 pas en µs qui vaut donc : 
   // step_delay_us = 1 000 000 / total_steps_per_mm = 1 000 000 / fr * axe_steps_per_mm
   
-  step_delay_us=1000000/(nfr*X_STEPS_PER_MM); // calcul delai entre 2 pas
-  //output("step_delay_us : ", step_delay_us); 
+  if (nfr!=0){ // pour éviter division par zero si nfr=0
+	  step_delay_us=1000000/(nfr*X_STEPS_PER_MM); // calcul delai entre 2 pas
+	  //output("step_delay_us : ", step_delay_us);
+  } // fin if nfr!=0
   
   /*
   if(nfr>MAX_FEEDRATE || nfr<MIN_FEEDRATE) { // limitation feedrate 
