@@ -1,13 +1,11 @@
 // --- Programme Arduino --- 
 
-// Auteur du Programme : Xavier HINAULT - Tous droits réservés - Licence GPL v3
-// Programme écrit le : 02/2015 MAJ : 04/2015
+// Auteur du Programme : X. HINAULT - Tous droits réservés - Licence GPL v3
+// Programme écrit le : 02/2015 - MAJ 06/2015
 // www.mon-club-elec.fr 
 
-// github du projet : https://github.com/sensor56/Simple-GCode-Decoder
-// exemple d'utilisation : www.mon-club-elec.fr/openmakermachine 
-
 // initié d'après : https://www.marginallyclever.com/blog/2013/08/how-to-build-an-2-axis-arduino-cnc-gcode-interpreter/
+// https://github.com/MarginallyClever/GcodeCNCDemo/blob/master/GcodeCNCDemo2AxisV2/GcodeCNCDemo2AxisV2.ino
 
 // ------- Licence du code de ce programme ----- 
 //  This program is free software: you can redistribute it and/or modify
@@ -60,7 +58,7 @@
  String chaineReception=""; // déclare un objet String vide pour reception chaine
 */
 
-#define VERSION (0.2)
+#define VERSION (0.3)
 
 //--- config générale ---
 #define BAUD (115200) // debit de communication
@@ -89,11 +87,11 @@
 
 
 // limites mouvements en mm
-#define X_MAX_POS 200
+#define X_MAX_POS 290
 #define X_MIN_POS 0
-#define Y_MAX_POS 200
+#define Y_MAX_POS 210
 #define Y_MIN_POS 0
-#define Z_MAX_POS 200
+#define Z_MAX_POS 50
 #define Z_MIN_POS 0
 
 // chaque moteur est controlé par 
@@ -166,6 +164,17 @@ int mode=90; // mode absolu/relatif - 90 = absolu 92 = relatif - par défaut abs
 long line_number=0;
 
 int lastCmd=-1; // Variable mémorise dernier commande G appelée
+
+//-- variables de backslash --
+
+int bs_Up[3]={1200,600,600}; // valeur de correction du backslash dans le sens mouvement positif
+int bs_Down[3]={1200,600,600}; // valeur de correction du backslash dans le sens mouvement négatif
+
+int dir[3]={0,0,0}; // direction courante du mouvement : -1 si sens nég, +1 si sens +
+
+int last_Dir[3]={0,0,0}; // mémorisation dernière direction du mouvement : -1 si sens nég, +1 si sens +
+// 0 au départ = pas d'info sur dernier mouvement - un home X, Y est conseillé
+
 
 // --- Déclaration des objets utiles pour les fonctionnalités utilisées ---
 
@@ -298,13 +307,14 @@ while (Serial.available()>0) { // tant qu'un octet en réception
 	}// fin else
 
 	// --- commande personnalisée --- => a mettre dans analyse chaine.. 
-	else if (sizeIn>0 && buffer[0]=='$') { // sizeIn>0 et ready() necessaires 
+	/*else if (sizeIn>0 && buffer[0]=='$') { // sizeIn>0 et ready() necessaires 
 
 		Serial.println("status()");
 		status();
 		ready(); // reinitialise buffer
 
 	} // else if
+	*/
 	else if(sizeIn>0 ) { // sinon on vide le buffer reception
 		
 		 Serial.println(); // saut ligne 
@@ -351,7 +361,6 @@ void help() {
 	Serial.println(F("G00 [X(steps)] [Y(steps)] [F(feedrate)]; - linear move"));
 	Serial.println(F("G01 [X(steps)] [Y(steps)] [F(feedrate)]; - linear move"));
 	Serial.println(F("G04 P[seconds]; - delay"));
-	Serial.println(F("G28 [X] [Y] [Z]; - home axis"));
 	Serial.println(F("G90; - absolute mode"));
 	Serial.println(F("G91; - relative mode"));
 	Serial.println(F("G92 [X(steps)] [Y(steps)]; - change logical position"));
@@ -374,8 +383,16 @@ void status() {
  output("pos X :", px);
  output("pos Y :", py);
  output("pos Z :", pz);
+
+ output("bsUp x = ", bs_Up[x]); // backslash
+ output("bsUp y = ", bs_Up[y]); // backslash
+ output("bsUp z = ", bs_Up[z]); // backslash
  
- 
+ output("bsDown x = ", bs_Down[x]); // backslash
+ output("bsDown y = ", bs_Down[y]); // backslash
+ output("bsDown z = ", bs_Down[z]); // backslash
+
+ Serial.println((mode-90)?"REL":"ABS");// affiche mode ABS ou REL - mode 90 : ABS et 92 : REL
 }
 
 //--- RAZ buffer reception 
@@ -406,7 +423,14 @@ void analyseChaine() {
   
   //---------- decodage instructions M --------------- 
   else if (buffer[0]=='M') analyseM();
-  
+
+  //--- si commande $ pour status interne ---
+  else if (buffer[0]=='$') {
+  		Serial.println("status()");
+		status();
+		ready(); // reinitialise buffer
+		sendOK(); 
+  }
   else sendOK(); 
   
 } // fin analyse chaine
@@ -552,6 +576,44 @@ void analyseM() {
 	  sendOK();
 	  break;
 
+	case 99: // fixe le backslash (hysteresis) en micropas - F indique up ou down avec F+1/-1  
+		Serial.println(F("M99"));
+		
+		if (parsenumber('F',0)==1) { // si F1 = backslash up
+			
+			bs_Up[x]=parsenumber('X',bs_Up[x]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
+			output("bsUp x = ", bs_Up[x]); // debug
+
+			bs_Up[y]=parsenumber('Y',bs_Up[y]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
+			output("bsUp y = ", bs_Up[y]); // debug
+
+			bs_Up[z]=parsenumber('Z',bs_Up[z]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
+			output("bsUp z = ", bs_Up[z]); // debug
+
+		} // fin if F1
+
+		else if (parsenumber('F',0)==-1){ // si F-1 = backslash down
+
+			bs_Down[x]=parsenumber('X',bs_Down[x]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
+			output("bsDown x =", bs_Down[x]); // debug
+
+			bs_Down[y]=parsenumber('Y',bs_Down[y]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
+			output("bsDown y =", bs_Down[y]); // debug
+
+			bs_Down[z]=parsenumber('Z',bs_Down[z]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
+			output("bsDown z =", bs_Down[z]); // debug
+
+		}// fin if F-1
+		
+		else {
+
+			Serial.println("Preciser F valide (1 ou -1)");
+
+		}// fin else
+		
+		sendOK();
+		break;
+	  
 	case 100: 
 	  Serial.println(F("M100"));
 	  help(); 
@@ -569,7 +631,7 @@ void analyseM() {
 	  where(); 
 	  sendOK();
 	  break;
-	
+	  
 	default: 
 		sendOK();
 	  break;
@@ -677,6 +739,9 @@ void searchEndstop(int axisIn) {
 			} // fin si appui
 
 		} // fin while
+
+		last_Dir[axisIn]=-1; // MAJ lastDir[axisIn]
+
 
 } // fin searchEndstop
 
@@ -791,12 +856,12 @@ void feedrate(float nfr) {
   // le feedrate s'exprime en mm par seconde 
   // ici on calcul le delay entre 2 pas en µs qui vaut donc : 
   // step_delay_us = 1 000 000 / total_steps_per_mm = 1 000 000 / fr * axe_steps_per_mm
-  
+
   if (nfr!=0){ // pour éviter division par zero si nfr=0
-	  step_delay_us=1000000/(nfr*X_STEPS_PER_MM); // calcul delai entre 2 pas
-	  //output("step_delay_us : ", step_delay_us);
+	step_delay_us=1000000/(nfr*X_STEPS_PER_MM); // calcul delai entre 2 pas
+	//output("step_delay_us : ", step_delay_us);
   } // fin if nfr!=0
-  
+
   /*
   if(nfr>MAX_FEEDRATE || nfr<MIN_FEEDRATE) { // limitation feedrate 
 	Serial.print(F("Le feedrate doit etre superieur a "));
@@ -830,9 +895,33 @@ void line(float newx,float newy) {
 	//int dirx=dx>0?1:-1;
 	//int diry=dy>0?-1:1; // because the motors are mounted in opposite directions
 	
-	int dirx=dx>0?0:1; // 0 et 1 plutôt que -1 et 1
-	int diry=dy>0?0:1; // 0 et 1 plutôt que -1 et 1
+	//int dirx=dx>0?0:1; // 0 et 1 plutôt que -1 et 1 = utilisation directe valeur LOW/HIGH - mais pas intuitif
+	//int diry=dy>0?0:1; // 0 et 1 plutôt que -1 et 1
+
+	//int dirx=dx>0?1:-1; // -1 et 1 plutôt que 0 et 1
+	//int diry=dy>0?1:-1; // -1 et 1 plutôt que 0 et 1
+
+	dir[x]=dx>0?1:-1; // -1 et 1 plutôt que 0 et 1
+	dir[y]=dy>0?1:-1; // -1 et 1 plutôt que 0 et 1
+
+	output("dirx", dir[x]); // debug
+	output("diry", dir[y]); // debug
+
+	//dy>0?0:1 : syntaxe de condition inline
+
+	// ---- prise en compte du changement de direction et correction du backslash avant le mouvement --- 
+
+	// -- axe X
+	backslash(x,dx); 
+
+
+	// -- axe Y
+	backslash(y,dy); 
+
+	// -- axe Z
+	// pas ici - voir outil.. 
 	
+
 	// valeur absolue de delta x, y 
 	dx=abs(dx);
 	dy=abs(dy);
@@ -850,15 +939,32 @@ void line(float newx,float newy) {
 	if(dx>dy) {
 		
 		for(i=0;i<dx;++i) {
-			onestep(X,dirx); // moteur X
+			onestep(X,dir[x]); // moteur X
 			over+=dy;
 			
 			if(over>=dx) {
 				over-=dx;
-				onestep(Y,diry); // moteur Y
+				onestep(Y,dir[y]); // moteur Y
 			} // fin if
+
+		tick(); // pause entre 2 pas
+
+		/*
+		// détection des endstop de sécurité - revoir pour détection tous les npas...
+		if (digitalRead(pin_ENDSTOP[x])==APPUI) { // on teste le endstop x - si appui, on sort de la fonction line de mouvement
+
+			Serial.println("Appui endstop X : arret des mouvements"); 
+			return; // on sort de la fonction line 
+
+		} // fin if endstop x
 		
-		tick();
+		if (digitalRead(pin_ENDSTOP[y])==APPUI) { // on teste le endstop y - si appui, on sort de la fonction line de mouvement
+			
+			Serial.println("Appui endstop Y : arret des mouvements"); 
+			return;  // on sort de la fonction line
+			
+		} // fin if endstop y
+		*/
 		
 		} // fin for
 		
@@ -867,12 +973,12 @@ void line(float newx,float newy) {
 	else { // si dy<dx
 		
 		for(i=0;i<dy;++i) {
-			onestep(Y,diry);
+			onestep(Y,dir[y]);
 			over+=dx;
 			
 			if(over>=dy) {
 				over-=dy;
-				onestep(X,dirx);
+				onestep(X,dir[x]);
 			} // fin if
 	
 			tick();
@@ -887,8 +993,13 @@ void outil(float newz) {
 
 	long dz=(newz-pz)*Z_STEPS_PER_MM;
 	
-	int dirz=dz>0?0:1; // 0 et 1 plutôt que -1 et 1
-	
+	//int dirz=dz>0?0:1; // 0 et 1 plutôt que -1 et 1
+
+	//int dirz=dz>0?1:-1; // -1 et 1 plutôt que 0 et 1
+
+	dir[z]=dz>0?1:-1; // -1 et 1 plutôt que 0 et 1
+	output("dirz", dir[z]); // debug
+
 	// valeur absolue de delta z 
 	dz=abs(dz);
 	
@@ -902,7 +1013,7 @@ void outil(float newz) {
 	
 	// boucle de mouvement 		
 		for(i=0;i<dz;++i) {
-			onestep(Z,dirz); // moteur Z		
+			onestep(Z,dir[z]); // moteur Z		
 		   tick();
 		} // fin for
 	
@@ -910,11 +1021,13 @@ void outil(float newz) {
 
 
 // fonction 1 pas moteur 
-void onestep(int motor,int direction) {
+void onestep(int motor,int dirIn) {
   
   // motor =0 pour X, 1 pour Y et 2 pour Z
 
   // fixe sens moteur
+  int direction=0; // variable locale etat broche direction
+  if (dirIn==-1) direction=LOW; else direction=HIGH; // conversion -1 / 1 en LOW/HIGH
   digitalWrite(pin_DIR[motor], direction); // sens du pas - direction vaut 0 ou 1
 
   // genere pulse moteur 
@@ -944,11 +1057,62 @@ void position(float npx,float npy) {
   // fixe la position courante ... 
   px=npx;  
   py=npy;
-} // fin position 
+} // fin position
+
+// fonction de correction logicielle du jeu d'écrou (backslash)
+void backslash(int axisIn, int dIn) { // dIn = delta courant sur l'axe
+
+	output("axe:",axisIn); 
+
+	if (last_Dir[axisIn]==0) { // si valeur initiale = si pas de home...
+		Serial.println(F("Home axe non fait"));
+		
+		last_Dir[axisIn]=dir[axisIn]; // MAJ lastDir[x] - de cette façon mouvement suivant aura correction backslash
+		
+	} // fin last-Dir==0
+
+	else if (dIn==0) { // si pas de mouvement sur X
+		Serial.println(F("Pas de mouvement sur axe"));
+		// pas de MAJ de lastDir qui reste inchangé depuis dernier mouvement
+	}
+	else if (last_Dir[axisIn]<dir[axisIn]) { // si inversion sens X du négatif (précédent) vers positif (actuel)
+		
+		Serial.println(F("Inversion sens negatif vers positif : compensation du Backslash Up")); // debug
+		Serial.println(bs_Up[axisIn]);
+		
+		for (int i=0; i<bs_Up[axisIn]; i++) { // boucle de n pas de compensation du backslash up
+			onestep(axisIn,dir[axisIn]); // avance d'un pas sens voulu
+			tick(); // pause entre 2 pas
+		} // fin for
+		// note : les n pas sont effectués d'un coup
+		
+		last_Dir[axisIn]=dir[axisIn]; // MAJ lastDir[x]
+		
+		
+	} // fin else if sens - vers +
+
+	else if (last_Dir[axisIn]>dir[axisIn]) { // si inversion sens X du positif (précédent) vers negatif (actuel)
+		
+		Serial.println(F("Inversion sens X positif vers negatif : compensation du Backslash Down")); // debug
+		Serial.println(bs_Down[axisIn]);
+
+		for (int i=0; i<bs_Down[axisIn]; i++) { // boucle de n pas de compensation du backslash down
+			onestep(axisIn,dir[axisIn]); // avance d'un pas sens voulu - négatif ici 
+			tick(); // pause entre 2 pas
+		} // fin for
+		// note : les n pas sont effectués d'un coup
+
+		
+		last_Dir[axisIn]=dir[axisIn]; // MAJ lastDir[x]
+	
+	} // fin else if sens + vers -
+	
+} // fin backslash
 
 // ////////////////////////// Fin du programme //////////////////// 
 
 
 // ////////////////////////// Mémo instructions //////////////////// 
 // ////////////////////////// Fin Mémo instructions //////////////////// 
+
 
