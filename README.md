@@ -5,6 +5,7 @@ Un decodeur de G-Code léger pour machine 3 axes compatible Arduino Uno. Ecrit p
 
 - 29/06 : Ajout de la correction logicielle du backslash
 - 04/07 : Ajout du GCode M99 Xxxx Yxxx Zxxx F+1/-1 pour modifier le backslash avec xxx en nombre de micropas
+- 04/07 : Réactivation de la commande $ pour messages de statut interne
 
 ## Description 
 Le Simple G-Code Decoder est un décodeur de G-Code minimaliste, de 10Ko environ pouvant donc tenir dans une carte Arduino, pour machine 3 axes, permettant de contrôler des moteurs pas-à-pas en mode micropas via des drivers A4988. 
@@ -45,6 +46,8 @@ Les instructions de G-Code implémentées et reconnues par le Simple G-Code Deco
 
 - M100 : Aide
 - M114 : Localisation courante
+
+- M99 : Paramétrage du backslash logiciel courant à utiliser. 
 
 D'autres instructions seront ajoutées en fonction des besoins, mais ce jeu d'instruction suffit pour une utilisation d'une machine multi-outil 3 axes. Il est également très facile d'ajouter ses propres instructions personnaliées. 
 
