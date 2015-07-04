@@ -1,5 +1,10 @@
-# Simple-GCode-Decoder
+# Simple-GCode-Decoder - version DEV
 Un decodeur de G-Code léger pour machine 3 axes compatible Arduino Uno. Ecrit par X. HINAULT (www.mon-club-elec.fr). Sous licence GPL v3. 
+
+## News
+
+- 29/06 : Ajout de la correction logicielle du backslash
+- 04/07 : Ajout du GCode M99 Xxxx Yxxx Zxxx F+1/-1 pour modifier le backslash avec xxx en nombre de micropas
 
 ## Description 
 Le Simple G-Code Decoder est un décodeur de G-Code minimaliste, de 10Ko environ pouvant donc tenir dans une carte Arduino, pour machine 3 axes, permettant de contrôler des moteurs pas-à-pas en mode micropas via des drivers A4988. 
@@ -55,4 +60,6 @@ Le Simple GCode Decoder a été développé et est utilisé sur l'Open Maker Mac
 ## Interface graphique disponible
 
 En complément du Simple GCode Decoder, il est possible d'utiliser une interface PyQt dédiée : l'interface Simple GCode GUI du même auteur. 
+
+
 
