@@ -54,5 +54,5 @@ Le Simple GCode Decoder a été développé et est utilisé sur l'Open Maker Mac
 
 ## Interface graphique disponible
 
-En complément du Simple GCode Decoder, il est possible d'utiliser une interface PyQt dédiée : l'interface Simple GCode GUI du même auteur. 
+En complément du Simple GCode Decoder, il est possible d'utiliser une interface PyQt dédiée : l'interface [Simple GCode GUI](https://github.com/sensor56/Simple-GCode-GUI) du même auteur. 
 
