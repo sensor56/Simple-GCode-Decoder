@@ -12,7 +12,7 @@ Le Simple GCode Decoder est compatible avec le CNC-Shield : http://blog.protonee
 
 ## Caractéristiques essentielles 
 
-- Léger (seulement 10Ko environ !), programmable dans une simple carte Arudino
+- Léger (seulement 10Ko environ !), programmable dans une simple carte Arduino
 - supporte un jeu d'instructions de G-Code permettant une utilisation immédiate de G-Code généré avec PyCamm
 - Entièrement paramétrable : mode micro-pas utilisé, nombre pas moteur, mm/pas, etc...
 - Facile à utilisé avec des étages pololu A4988
