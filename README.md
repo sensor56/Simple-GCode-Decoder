@@ -6,6 +6,7 @@ Un decodeur de G-Code léger pour machine 3 axes compatible Arduino Uno. Ecrit p
 - 29/06 : Ajout de la correction logicielle du backslash
 - 04/07 : Ajout du GCode M99 Xxxx Yxxx Zxxx F+1/-1 pour modifier le backslash avec xxx en nombre de micropas
 - 04/07 : Réactivation de la commande $ pour messages de statut interne
+- 08/07 : Ajout du support vitesse F au format décimal pour vitesses lentes
 
 ## Description 
 Le Simple G-Code Decoder est un décodeur de G-Code minimaliste, de 10Ko environ pouvant donc tenir dans une carte Arduino, pour machine 3 axes, permettant de contrôler des moteurs pas-à-pas en mode micropas via des drivers A4988. 
