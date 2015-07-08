@@ -167,8 +167,11 @@ int lastCmd=-1; // Variable mémorise dernier commande G appelée
 
 //-- variables de backslash --
 
-int bs_Up[3]={1200,600,600}; // valeur de correction du backslash dans le sens mouvement positif
-int bs_Down[3]={1200,600,600}; // valeur de correction du backslash dans le sens mouvement négatif
+int bs_Up[3]={0,0,0}; // valeur de correction du backslash dans le sens mouvement positif
+int bs_Down[3]={0,0,0}; // valeur de correction du backslash dans le sens mouvement négatif
+
+// 0,0,0 par défaut pour permettre découpe, etc... utiliser vitesse minimale F1 
+// pour perçage utiliser 1200, 600, 600 avec M99 X1200 Y600 Z600 F1 et M99 X1200 Y600 Z600 F-1 
 
 int dir[3]={0,0,0}; // direction courante du mouvement : -1 si sens nég, +1 si sens +
 
@@ -582,26 +585,26 @@ void analyseM() {
 		if (parsenumber('F',0)==1) { // si F1 = backslash up
 			
 			bs_Up[x]=parsenumber('X',bs_Up[x]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
-			output("bsUp x = ", bs_Up[x]); // debug
+			//output("bsUp x = ", bs_Up[x]); // debug
 
 			bs_Up[y]=parsenumber('Y',bs_Up[y]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
-			output("bsUp y = ", bs_Up[y]); // debug
+			//output("bsUp y = ", bs_Up[y]); // debug
 
 			bs_Up[z]=parsenumber('Z',bs_Up[z]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
-			output("bsUp z = ", bs_Up[z]); // debug
+			//output("bsUp z = ", bs_Up[z]); // debug
 
 		} // fin if F1
 
 		else if (parsenumber('F',0)==-1){ // si F-1 = backslash down
 
 			bs_Down[x]=parsenumber('X',bs_Down[x]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
-			output("bsDown x =", bs_Down[x]); // debug
+			//output("bsDown x =", bs_Down[x]); // debug
 
 			bs_Down[y]=parsenumber('Y',bs_Down[y]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
-			output("bsDown y =", bs_Down[y]); // debug
+			//output("bsDown y =", bs_Down[y]); // debug
 
 			bs_Down[z]=parsenumber('Z',bs_Down[z]); // fixe le nouveau backslash ou reste inchangé si absent dans chaine
-			output("bsDown z =", bs_Down[z]); // debug
+			//output("bsDown z =", bs_Down[z]); // debug
 
 		}// fin if F-1
 		
@@ -749,9 +752,9 @@ void searchEndstop(int axisIn) {
 void parseFXYZ(){
 		
 		//feedrate(parsenumber('F',fr)); // analyse valeur FXXX présent aussi dans l'instruction - fixe la vitesse 
-		int newfr=parsenumber('F',-1); // extraction du feedrate - currentfr est passé en paramètre à parsenumber = valeur inchangée si pas de valeur renvoyée
+		float newfr=parsenumber('F',-1.0); // extraction du feedrate - currentfr est passé en paramètre à parsenumber = valeur inchangée si pas de valeur renvoyée
 
-		if (newfr!=-1) {
+		if (newfr!=-1.0) {
 			feedrate(newfr); // prend en compte le nouveau feedrate -- 
 			fr=newfr; // mémorise nouveau fr
 		} // fin if 
@@ -1062,23 +1065,23 @@ void position(float npx,float npy) {
 // fonction de correction logicielle du jeu d'écrou (backslash)
 void backslash(int axisIn, int dIn) { // dIn = delta courant sur l'axe
 
-	output("axe:",axisIn); 
+	//output("axe:",axisIn); 
 
 	if (last_Dir[axisIn]==0) { // si valeur initiale = si pas de home...
-		Serial.println(F("Home axe non fait"));
+		//Serial.println(F("Home axe non fait")); // debug
 		
 		last_Dir[axisIn]=dir[axisIn]; // MAJ lastDir[x] - de cette façon mouvement suivant aura correction backslash
 		
 	} // fin last-Dir==0
 
 	else if (dIn==0) { // si pas de mouvement sur X
-		Serial.println(F("Pas de mouvement sur axe"));
+		//Serial.println(F("Pas de mouvement sur axe")); // debug
 		// pas de MAJ de lastDir qui reste inchangé depuis dernier mouvement
 	}
 	else if (last_Dir[axisIn]<dir[axisIn]) { // si inversion sens X du négatif (précédent) vers positif (actuel)
 		
-		Serial.println(F("Inversion sens negatif vers positif : compensation du Backslash Up")); // debug
-		Serial.println(bs_Up[axisIn]);
+		//Serial.println(F("Inversion sens negatif vers positif : compensation du Backslash Up")); // debug
+		//Serial.println(bs_Up[axisIn]); // debug
 		
 		for (int i=0; i<bs_Up[axisIn]; i++) { // boucle de n pas de compensation du backslash up
 			onestep(axisIn,dir[axisIn]); // avance d'un pas sens voulu
@@ -1093,8 +1096,8 @@ void backslash(int axisIn, int dIn) { // dIn = delta courant sur l'axe
 
 	else if (last_Dir[axisIn]>dir[axisIn]) { // si inversion sens X du positif (précédent) vers negatif (actuel)
 		
-		Serial.println(F("Inversion sens X positif vers negatif : compensation du Backslash Down")); // debug
-		Serial.println(bs_Down[axisIn]);
+		// Serial.println(F("Inversion sens X positif vers negatif : compensation du Backslash Down")); // debug
+		// Serial.println(bs_Down[axisIn]); // debug
 
 		for (int i=0; i<bs_Down[axisIn]; i++) { // boucle de n pas de compensation du backslash down
 			onestep(axisIn,dir[axisIn]); // avance d'un pas sens voulu - négatif ici 
