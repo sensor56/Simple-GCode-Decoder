@@ -65,15 +65,3 @@ Le Simple GCode Decoder a été développé et est utilisé sur l'Open Maker Mac
 
 En complément du Simple GCode Decoder, il est possible d'utiliser une interface PyQt dédiée : l'interface Simple GCode GUI du même auteur. 
 
-
-## Configuration 
-
-Il est possible de fixer les limites de position au niveau des variables : 
-
-#define X_MAX_POS 290
-#define X_MIN_POS 0
-#define Y_MAX_POS 210
-#define Y_MIN_POS 0
-#define Z_MAX_POS 50
-#define Z_MIN_POS 0
-
