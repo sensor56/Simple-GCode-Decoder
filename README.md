@@ -65,6 +65,6 @@ Le nombre de pas correspond au nombres de pas à réaliser à vide lors d'un cha
 Le sens prend la valeur 1 pour un changement de sens positif et -1 pour un changement de sens négatif. 
 
 Exemple : 
-M99 X1200 Y600 Z600 F1
-M99 X1200 Y600 Z600 F-1
+- M99 X1200 Y600 Z600 F1   
+- M99 X1200 Y600 Z600 F-1   
 
