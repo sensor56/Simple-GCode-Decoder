@@ -65,3 +65,13 @@ Le Simple GCode Decoder a été développé et est utilisé sur l'Open Maker Mac
 
 En complément du Simple GCode Decoder, il est possible d'utiliser une interface PyQt dédiée : l'interface Simple GCode GUI du même auteur. 
 
+## Correction du backlash
+
+La commande M99 permet d'ajouter une correction logicielle du backlash (jeu) au changement de direction. La forme de la commande est : M99 Xnombrepas Ynombrepas Znombrepas Fsens
+
+Le nombre de pas correspond au nombres de pas à réaliser à vide lors d'un changement de direction. 
+Le sens prend la valeur 1 pour un changement de sens positif et -1 pour un changement de sens négatif. 
+
+Exemple : 
+- M99 X1200 Y600 Z600 F1   
+- M99 X1200 Y600 Z600 F-1   
