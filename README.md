@@ -59,7 +59,7 @@ En complément du Simple GCode Decoder, il est possible d'utiliser une interface
 
 ## Correction du backlash
 
-La commande M99 permet d'ajouter une correction logicielle du backlash (jeu) au changement de direction. La forme de la commande est : M99 Xnombrepas Ynombrepas Fsens. 
+La commande M99 permet d'ajouter une correction logicielle du backlash (jeu) au changement de direction. La forme de la commande est : M99 Xnombrepas Ynombrepas Znombrepas Fsens
 
 Le nombre de pas correspond au nombres de pas à réaliser à vide lors d'un changement de direction. 
 Le sens prend la valeur 1 pour un changement de sens positif et -1 pour un changement de sens négatif. 
