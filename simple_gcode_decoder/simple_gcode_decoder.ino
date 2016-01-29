@@ -371,7 +371,7 @@ void help() {
 	Serial.println(F("M100; - this help message"));
 	Serial.println(F("M114; - report position and feedrate"));
   
-  	Serial.println(F("M99; [X(steps)] [Y(steps)] [Z(steps)] [F(-1/1)]; - change backslash correction"));
+  	Serial.println(F("M99; [X(steps)] [Y(steps)] [Z(steps)] [F(-1/1)]; - change backlash correction"));
 }
 
 //---- message etat ----
