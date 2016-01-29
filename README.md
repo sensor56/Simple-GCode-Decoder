@@ -38,6 +38,7 @@ Les instructions de G-Code implémentées et reconnues par le Simple G-Code Deco
 - G91 : mode coordonnées relatives
 - G92 : Fixe la position courante interne
 
+- M99 : Fixe la correction logicielle du backlash à appliquer
 - M100 : Aide
 - M114 : Localisation courante
 
@@ -55,4 +56,15 @@ Le Simple GCode Decoder a été développé et est utilisé sur l'Open Maker Mac
 ## Interface graphique disponible
 
 En complément du Simple GCode Decoder, il est possible d'utiliser une interface PyQt dédiée : l'interface [Simple GCode GUI](https://github.com/sensor56/Simple-GCode-GUI) du même auteur. 
+
+## Correction du backlash
+
+La commande M99 permet d'ajouter une correction logicielle du backlash (jeu) au changement de direction. La forme de la commande est : M99 Xnombrepas Ynombrepas Fsens. 
+
+Le nombre de pas correspond au nombres de pas à réaliser à vide lors d'un changement de direction. 
+Le sens prend la valeur 1 pour un changement de sens positif et -1 pour un changement de sens négatif. 
+
+Exemple : 
+M99 X1200 Y600 Z600 F1
+M99 X1200 Y600 Z600 F-1
 
